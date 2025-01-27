@@ -1,16 +1,3 @@
-# flutter_application_7
+Home Care App
 
-A new Flutter project.
-
-## Getting Started
-
-This project is a starting point for a Flutter application.
-
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+ Home care android application for home services is a mobile application built for android users , which is catered to the requirements of a client who wants to provide domestic home services online by bringing together user and service providers . Home Care’s mission is to be the customer’s preferred service solution and ensure skilled  people is provided with job opportunities . The registered user can demand a service available through the application. Now  you can say goodbye to endlessly chasing  carpenters , electricians , plumbers , technicians for your home services . Home Care brings you the expert services for anything that need to be fixed in your home.
