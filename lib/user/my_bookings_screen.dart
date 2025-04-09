@@ -130,7 +130,7 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
                       const SizedBox(height: 8),
                       const Divider(),
                       const SizedBox(height: 8),
-                      Text('Provider Name: ${Casing.pascalCase(myBookings.providerName ?? 'No Name')}'),
+                      Text('Provider Name: ${Casing.pascalCase(myBookings.name ?? 'No Name')}'),
                       const SizedBox(height: 8),
                       Text(
                         'Date: ${myBookings.dateOfBooking}',

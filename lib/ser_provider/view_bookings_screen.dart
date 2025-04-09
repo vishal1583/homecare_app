@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:dart_casing/dart_casing.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_application_7/models/data_models.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -37,6 +38,7 @@ class _ViewBookingsScreenState extends State<ViewBookingsScreen> {
       var response = await http.get(Uri.parse(url));
       if (response.statusCode == 200) {
         final List<dynamic> data = jsonDecode(response.body);
+        print(data);
 
         // Exclude bookings with status 'accepted' or 'rejected'
         return data
@@ -112,10 +114,6 @@ class _ViewBookingsScreenState extends State<ViewBookingsScreen> {
     }
   }
 
-  String _capitalize1stLetter(String text) {
-    if (text.isEmpty) return text;
-    return text[0].toUpperCase() + text.substring(1);
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -183,13 +181,13 @@ class _ViewBookingsScreenState extends State<ViewBookingsScreen> {
                         const Divider(),
                         const SizedBox(height: 8),
                         Text(
-                          'User ID: ${providerbookings.userId}',
+                          'Customer Name: ${Casing.pascalCase(providerbookings.name ?? 'No Name')}',
                           style: const TextStyle(fontSize: 16),
                         ),
-                        Text(
-                          'Provider ID: ${providerbookings.providerId}',
-                          style: const TextStyle(fontSize: 16),
-                        ),
+                        // Text(
+                        //   'Provider ID: ${providerbookings.providerId}',
+                        //   style: const TextStyle(fontSize: 16),
+                        // ),
                         Text(
                           'Date: ${providerbookings.dateOfBooking}',
                           style: const TextStyle(fontSize: 16),
@@ -205,7 +203,7 @@ class _ViewBookingsScreenState extends State<ViewBookingsScreen> {
                               style: TextStyle(fontSize: 16),
                             ),
                             Text(
-                              _capitalize1stLetter(providerbookings.status),      // :)
+                              Casing.pascalCase(providerbookings.status),
                               style: TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
