@@ -1,3 +1,4 @@
+import 'package:dart_casing/dart_casing.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_application_7/select_user.dart';
 // import 'package:flutter_application_7/user/feedback.dart';
@@ -61,7 +62,7 @@ class _DashboardScreen1State extends State<DashboardScreen1> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  'Welcome $username',
+                  'Welcome ${Casing.pascalCase(username)} !',
                   style: Theme.of(context)
                       .textTheme
                       .titleLarge

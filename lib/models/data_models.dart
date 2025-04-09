@@ -66,6 +66,7 @@ class Bookings {
   final String dateOfBooking;
   final String timeOfBooking;
   final String status;
+  String? name;
 
   Bookings({
     required this.id,
@@ -74,6 +75,7 @@ class Bookings {
     required this.dateOfBooking,
     required this.timeOfBooking,
     required this.status,
+    this.name,
   });
 
   factory Bookings.fromJson(Map<String, dynamic> jsonData) {
@@ -84,6 +86,7 @@ class Bookings {
       dateOfBooking: jsonData['date_of_booking'],
       timeOfBooking: jsonData['time_of_booking'],
       status: jsonData['status'],
+      name: jsonData['username'] ?? 'No Name'
     );
   }
 }

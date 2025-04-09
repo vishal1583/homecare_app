@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:dart_casing/dart_casing.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_application_7/constants/my_colors.dart';
 import 'package:flutter_application_7/models/data_models.dart';
@@ -38,6 +39,7 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
     print(userid);
   }
 
+  // view bookings
   Future<List<Bookings>> getUserBookings() async {
     String url = 'http://$ip/homecare_app/usermybookings.php?uid=$userid';
 
@@ -45,6 +47,7 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
       var response = await http.get(Uri.parse(url));
       if (response.statusCode == 200) {
         final List<dynamic> data = jsonDecode(response.body);
+        print(data);
         return data.map((booking) => Bookings.fromJson(booking)).toList();
       } else {
         throw Exception('Failed to load bookings');
@@ -107,11 +110,12 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
+                      // Booking No
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            'Booking ID: ${myBookings.id}',
+                            'Booking No.${(index+1).toString()}',
                             style: TextStyle(
                               fontWeight: FontWeight.bold,
                               color: MyTheme.lightTheme.textTheme.bodyLarge?.color,
@@ -126,6 +130,8 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
                       const SizedBox(height: 8),
                       const Divider(),
                       const SizedBox(height: 8),
+                      Text('Provider Name: ${Casing.pascalCase(myBookings.name ?? 'No Name')}'),
+                      const SizedBox(height: 8),
                       Text(
                         'Date: ${myBookings.dateOfBooking}',
                         style: TextStyle(
@@ -133,6 +139,7 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
                         ),
                       ),
                       const SizedBox(height: 8),
+                      // Service Provider Name
                       Text(
                         'Time: ${myBookings.timeOfBooking}',
                         style: TextStyle(
@@ -140,19 +147,19 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
                         ),
                       ),
                       const SizedBox(height: 8),
-                      Text(
-                        'Provider ID: ${myBookings.providerId}',
-                        style: TextStyle(
-                          color: MyTheme.lightTheme.textTheme.bodySmall?.color,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        'Your userID: ${myBookings.userId}',
-                        style: TextStyle(
-                          color: MyTheme.lightTheme.textTheme.bodySmall?.color,
-                        ),
-                      ),
+                      // Text(
+                      //   'Provider ID: ${myBookings.providerId}',
+                      //   style: TextStyle(
+                      //     color: MyTheme.lightTheme.textTheme.bodySmall?.color,
+                      //   ),
+                      // ),
+                      // const SizedBox(height: 8),
+                      // Text(
+                      //   'Your userID: ${myBookings.userId}',
+                      //   style: TextStyle(
+                      //     color: MyTheme.lightTheme.textTheme.bodySmall?.color,
+                      //   ),
+                      // ),
                       const SizedBox(height: 8),
                       Row(
                         children: <Widget>[
@@ -163,7 +170,7 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
                             ),
                           ),
                           Text(
-                            myBookings.status,
+                            Casing.pascalCase(myBookings.status),
                             style: TextStyle(
                               fontWeight: FontWeight.bold,
                               color: getStatusColor(myBookings.status),
