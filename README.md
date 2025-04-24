@@ -8,7 +8,6 @@ The Home Care App is your all-in-one platform to connect users with trusted and 
 
 - 🔍 Browse and search for home services
 - 📅 Book service slots
-- 💬 Chat with service providers
 - ⭐ Rate and give feedback
 - 🧾 View booking history
 
