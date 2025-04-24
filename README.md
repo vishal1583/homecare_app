@@ -1,4 +1,38 @@
-**Home Care App**
-***
+# Home Care App
 
-Home Care Application for home services is a mobile application built for android users,which is catered to the requirements of a client who wants to provide domestic home services online by bringing together user and service providers . Home Care’s mission is to be the customer’s preferred service solution and ensure skilled people is provided with job opportunities. The registered user can demand a service available through the application.Now you can say goodbye to endlessly chasing carpenters,electricians,plumbers,technicians for your home services. Home Care brings you the expert services for anything that need to be fixed in your home.
+The Home Care App is your all-in-one platform to connect users with trusted and verified home service professionals. Whether you need a plumber, electrician, carpenter, or technician, Home Care ensures reliability and quality with a few taps.
+
+## 🚀 Features
+
+### For Users:
+
+- 🔍 Browse and search for home services
+- 📅 Book service slots
+- 💬 Chat with service providers
+- ⭐ Rate and give feedback
+- 🧾 View booking history
+
+### For Service Providers:
+
+- ✅ Register and verify profile
+- 📥 Receive and manage booking requests
+- 📊 Track performance and ratings
+
+## 🛠️ Tech Stack
+
+- **Frontend:** Flutter
+- **Backend:** PHP (XAMPP)
+- **Database:** MySQL
+
+## 🗂️ Project Structure
+
+```bash
+lib/
+├── screens/           # Stateless widgets for screens
+├── models/            # Data models (User, ServiceProvider, Booking, etc.)
+├── services/          # Backend API calls
+├── widgets/           # Reusable UI components
+assets/
+backend/
+├── connection.php     # Database connection file
+├── api/               # PHP scripts for API endpoints
