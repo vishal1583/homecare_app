@@ -30,9 +30,4 @@ The Home Care App is your all-in-one platform to connect users with trusted and 
 lib/
 ├── screens/           # Stateless widgets for screens
 ├── models/            # Data models (User, ServiceProvider, Booking, etc.)
-├── services/          # Backend API calls
 ├── widgets/           # Reusable UI components
-assets/
-backend/
-├── connection.php     # Database connection file
-├── api/               # PHP scripts for API endpoints
