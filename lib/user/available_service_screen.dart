@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:dart_casing/dart_casing.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_application_7/models/data_models.dart';
 import 'package:flutter_application_7/user/provider_details_screen.dart';
@@ -83,8 +84,8 @@ class _AvailableServiceScreenState extends State<AvailableServiceScreen> {
                         padding: const EdgeInsets.symmetric(vertical: 5,horizontal: 15.0),
                         child: ServiceAvailableCard(
                           leading: '${index+1}',
-                          title: serviceProvider.providerName,
-                          subtitle: serviceProvider.providerSkills,
+                          title: Casing.pascalCase(serviceProvider.providerName),
+                          subtitle: Casing.pascalCase(serviceProvider.providerSkills),
                           onPressed: () {
                             print('selected provider id: ${serviceProvider.id}');
                             _prefObj!.setString('providerid', serviceProvider.id);
