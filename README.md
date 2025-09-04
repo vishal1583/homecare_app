@@ -30,3 +30,4 @@ lib/
 ├── users/              # Stateless widgets for user screens
 ├── models/             # Data models (User, ServiceProvider, Booking, etc.)
 ├── widgets/            # Reusable UI components
+```
