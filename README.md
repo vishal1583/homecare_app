@@ -26,7 +26,7 @@ The Home Care App is your all-in-one platform to connect users with trusted and 
 
 ```
 lib/
-├── ser_provider/           # Stateless widgets for screens
-
-├── models/            # Data models (User, ServiceProvider, Booking, etc.)
-├── widgets/           # Reusable UI components
+├── ser_provider/       # Stateless widgets for service provider screens
+├── users/              # Stateless widgets for user screens
+├── models/             # Data models (User, ServiceProvider, Booking, etc.)
+├── widgets/            # Reusable UI components
