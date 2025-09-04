@@ -5,8 +5,7 @@ The Home Care App is your all-in-one platform to connect users with trusted and 
 ## 🚀 Features
 
 ### For Users:
-
-- 🔍 Browse and search for home services
+
 - 📅 Book service slots
 - ⭐ Rate and give feedback
 - 🧾 View booking history
@@ -25,7 +24,7 @@ The Home Care App is your all-in-one platform to connect users with trusted and 
 
 ## 🗂️ Project Structure
 
-```bash
+```
 lib/
 ├── screens/           # Stateless widgets for screens
 ├── models/            # Data models (User, ServiceProvider, Booking, etc.)
