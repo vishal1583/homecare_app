@@ -46,7 +46,7 @@ class _IpAddressScreenState extends State<IpAddressScreen> {
                       Navigator.pushReplacement(
                           context,
                           MaterialPageRoute(
-                              builder: (context) => SplashScreen()));
+                              builder: (context) => const SplashScreen()));
                     }
                   },
                   child: const Text('Submit'),

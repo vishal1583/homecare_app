@@ -42,12 +42,12 @@ class MyTheme {
       actionTextColor: accentOrange,
       behavior: SnackBarBehavior.floating,
     ),
-    bottomNavigationBarTheme: BottomNavigationBarThemeData(
+    bottomNavigationBarTheme: const BottomNavigationBarThemeData(
       backgroundColor: vanilla,
       selectedItemColor: accentOrange, // Accent color for selected items
       unselectedItemColor: Colors.black54,
-      selectedIconTheme: const IconThemeData(size: 24),
-      unselectedIconTheme: const IconThemeData(size: 20),
+      selectedIconTheme: IconThemeData(size: 24),
+      unselectedIconTheme: IconThemeData(size: 20),
     ),
     iconTheme: const IconThemeData(
       color: softBlue,
