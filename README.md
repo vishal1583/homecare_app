@@ -177,4 +177,5 @@ The database contains **5 tables**:
 ?>
 ```
 
-> **Tip:** Use prepared statements or parameterized queries in production to prevent SQL injection.
+
+
