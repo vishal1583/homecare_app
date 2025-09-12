@@ -21,7 +21,9 @@ class SelectUserScreen extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
 
-                Image.asset('assets/man.png'),
+                SizedBox(height: 200,width: 200,child: Image.asset('assets/man.png'),),
+
+                const SizedBox(height: 15),
 
                 // Title
                 const Text(
