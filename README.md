@@ -26,6 +26,11 @@ Whether you need a plumber, electrician, carpenter, or technician, Home Care ens
 
 ---
 ## 📸 Screenshots
+![01](screenshots/screenshot_01.png) 
+
+![01](screenshots/screenshot_02.png) 
+
+![01](screenshots/screenshot_03.png) 
 
 ---
 
@@ -179,6 +184,7 @@ The database contains **5 tables**:
     echo json_encode($data);
 ?>
 ```
+
 
 
 
