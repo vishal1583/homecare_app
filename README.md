@@ -25,6 +25,9 @@ Whether you need a plumber, electrician, carpenter, or technician, Home Care ens
 - **Database:** MySQL
 
 ---
+## 📸 Screenshots
+
+---
 
 ## 🗂️ Project Structure
 
@@ -176,6 +179,7 @@ The database contains **5 tables**:
     echo json_encode($data);
 ?>
 ```
+
 
 
 
