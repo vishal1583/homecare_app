@@ -33,6 +33,12 @@ Whether you need a plumber, electrician, carpenter, or technician, you can brows
 
 ![Homecare mobile UI showing the dashboard, service search, and bookings](assets/homecare-showcase.png)
 
+### Dashboards
+
+| Customer dashboard | Service provider dashboard |
+| --- | --- |
+| ![Homecare customer dashboard](assets/customer-dashboard.png) | ![Homecare service provider dashboard](assets/provider-dashboard.png) |
+
 Screenshots use fictional demo data.
 
 ---
@@ -55,7 +61,7 @@ lib/
 └── splash_screen.dart  # App loading screen
 
 test/                   # Widget, interaction, and responsive layout tests
-assets/                 # App assets and README showcase image
+assets/                 # App assets and README showcase images
 ```
 
 ---
