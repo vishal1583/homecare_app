@@ -1,8 +1,15 @@
 import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:flutter_application_7/extensions/build_context_extension.dart';
 import 'package:flutter_application_7/ser_provider/sign_up_screen2.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_application_7/services/api_config.dart';
+import 'package:flutter_application_7/utils/form_validators.dart';
+import 'package:flutter_application_7/widgets/app_form_page.dart';
+import 'package:flutter_application_7/widgets/password_field.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
+
 import 'dashboard_screen2.dart';
 
 class LoginScreen2 extends StatefulWidget {
@@ -13,7 +20,6 @@ class LoginScreen2 extends StatefulWidget {
 }
 
 class _LoginScreen2State extends State<LoginScreen2> {
-  
   final _loginKey = GlobalKey<FormState>();
   SharedPreferences? _prefObj;
   String ip = '';
@@ -31,6 +37,7 @@ class _LoginScreen2State extends State<LoginScreen2> {
   // Load the IP address
   Future<void> loadPref() async {
     _prefObj = await SharedPreferences.getInstance();
+    if (!mounted) return;
     setState(() {
       ip = _prefObj?.getString('ip') ?? 'No IP Address';
     });
@@ -39,10 +46,11 @@ class _LoginScreen2State extends State<LoginScreen2> {
   // Login function
   Future<void> login() async {
     _prefObj = await SharedPreferences.getInstance();
+    if (!mounted) return;
     final email = _emailController.text.trim();
     final password = _passwordController.text.trim();
 
-    String url = 'http://$ip/homecare_app/providerlogin.php';
+    final url = ApiConfig.endpoint(ip, 'providerlogin.php');
 
     setState(() {
       isLoading = true;
@@ -56,16 +64,19 @@ class _LoginScreen2State extends State<LoginScreen2> {
           'password': password,
         },
       );
+      if (!mounted) return;
 
       if (response.statusCode == 200) {
         var jsonString = jsonDecode(response.body);
 
         if (jsonString['message'] == 'success') {
-          print('provider id : ' + jsonString['providerInfo']['id']);
-          print('provider name : ' + jsonString['providerInfo']['username']);
+          debugPrint(
+              'Provider login succeeded: ${jsonString['providerInfo']['id']}');
+          debugPrint(
+              'Provider name: ${jsonString['providerInfo']['username']}');
 
-          
           SharedPreferences provider = await SharedPreferences.getInstance();
+          if (!mounted) return;
           var jsonString2 = jsonString['providerInfo']['id'];
           provider.setString('providerid', jsonString2);
           var jsonString3 = jsonString['providerInfo']['username'];
@@ -78,95 +89,98 @@ class _LoginScreen2State extends State<LoginScreen2> {
           provider.setString('providerlocation', jsonString6);
           var jsonString7 = jsonString['providerInfo']['skills'];
           provider.setString('providerskills', jsonString7);
-          // print(jsonString2);
-          // print(jsonString3);
-          // print(jsonString4);
-          // print(jsonString6);
-          // print(jsonString7);
-          
 
-          Navigator.pushAndRemoveUntil(context,MaterialPageRoute(builder: (context) => DashboardScreen2()),(Route<dynamic> route) => false,);
-          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Login Successful')));
-
+          context.navigator.pushAndRemoveUntil(
+            MaterialPageRoute(builder: (context) => const DashboardScreen2()),
+            (Route<dynamic> route) => false,
+          );
+          context.scaffoldMessenger
+            ..hideCurrentSnackBar()
+            ..showSnackBar(const SnackBar(content: Text('Login Successful')));
         } else {
-          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Login Failed')),);
+          context.scaffoldMessenger
+            ..hideCurrentSnackBar()
+            ..showSnackBar(
+              const SnackBar(content: Text('Login Failed')),
+            );
         }
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Server error. Please try again later.')));
+        context.scaffoldMessenger
+          ..hideCurrentSnackBar()
+          ..showSnackBar(const SnackBar(
+              content: Text('Server error. Please try again later.')));
       }
     } catch (e) {
-      print(e);
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('An error occurred: $e')));
+      if (!mounted) return;
+      debugPrint('Provider login failed: $e');
+      context.scaffoldMessenger
+        ..hideCurrentSnackBar()
+        ..showSnackBar(SnackBar(content: Text('An error occurred: $e')));
     } finally {
-      setState(() {
-        isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          isLoading = false;
+        });
+      }
     }
   }
 
   @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Service Provider Login'),
-      ),
-      body: Form(
-        key: _loginKey,
-        child: ListView(
-          padding: const EdgeInsets.symmetric(horizontal: 20),
-          children: [
-            const SizedBox(height: 50),
-            TextFormField(
-              keyboardType: TextInputType.emailAddress,
-              validator: (value) => (value!.isEmpty) ? 'Please enter your email' : null,
-              controller: _emailController,
-              decoration: const InputDecoration(labelText: 'E-mail', helperText: ''),
-            ),
-            const SizedBox(height: 8),
-            TextFormField(
-              keyboardType: TextInputType.visiblePassword,
-              // obscureText: true,
-              validator: (value) => (value!.isEmpty) ? 'Please enter your password' : null,
-              controller: _passwordController,
-              decoration: const InputDecoration(labelText: 'Password', helperText: ''),
-            ),
-            const SizedBox(height: 25),
-            isLoading
-                ? const Center(child: CircularProgressIndicator())
-                : ElevatedButton(
-                    onPressed: () {
-                      if (_loginKey.currentState!.validate()) {
-                        login();
-                      }
-                    },
-                    child: const Text('Login'),
-                  ),
-            const SizedBox(height: 18),
-            Center(
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Text('Don\'t have an account? '),
-                  GestureDetector(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const SignUpScreen2(),
-                        ),
-                      );
-                    },
-                    child: const Text(
-                      ' Sign Up',
-                      style: TextStyle(decoration: TextDecoration.underline,fontWeight: FontWeight.w600),
-                    ),
-                  ),
-                ],
+    return AppFormPage(
+      title: 'Service Provider Login',
+      heading: 'Good work starts here.',
+      description: 'Sign in to manage requests and your next job.',
+      icon: Icons.handyman_outlined,
+      formKey: _loginKey,
+      children: [
+        TextFormField(
+          textInputAction: TextInputAction.next,
+          keyboardType: TextInputType.emailAddress,
+          validator: FormValidators.required('Please enter your email'),
+          controller: _emailController,
+          decoration: const InputDecoration(
+              prefixIcon: Icon(Icons.email_outlined),
+              labelText: 'Email address',
+              hintText: 'you@example.com'),
+        ),
+        const SizedBox(height: 8),
+        PasswordField(
+            controller: _passwordController,
+            label: 'Password',
+            validator: FormValidators.required('Please enter your password')),
+        const SizedBox(height: 25),
+        isLoading
+            ? const Center(child: CircularProgressIndicator())
+            : ElevatedButton(
+                onPressed: () {
+                  if (_loginKey.currentState!.validate()) {
+                    login();
+                  }
+                },
+                child: const Text('Login'),
               ),
+        const SizedBox(height: 18),
+        Wrap(
+          alignment: WrapAlignment.center,
+          crossAxisAlignment: WrapCrossAlignment.center,
+          children: [
+            const Text('New to Homecare?'),
+            TextButton(
+              onPressed: () => context.navigator.push(MaterialPageRoute(
+                  builder: (context) => const SignUpScreen2())),
+              child: const Text('Create an account'),
             ),
           ],
         ),
-      ),
+      ],
     );
   }
 }

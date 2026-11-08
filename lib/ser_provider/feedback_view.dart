@@ -1,37 +1,18 @@
 import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:flutter_application_7/constants/my_colors.dart';
+import 'package:flutter_application_7/extensions/build_context_extension.dart';
+import 'package:flutter_application_7/services/api_config.dart';
+import 'package:flutter_application_7/widgets/app_collection_page.dart';
+import 'package:flutter_application_7/widgets/app_empty_state.dart';
+import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 
-class FeedbackModel {
-  final String feedbackId;
-  final String bookingId;
-  final String userId;
-  final String providerId;
-  final String rating;
-  final String comments;
+import '../models/feedback_model.dart';
 
-  FeedbackModel({
-    required this.feedbackId,
-    required this.bookingId,
-    required this.userId,
-    required this.providerId,
-    required this.rating,
-    required this.comments,
-  });
-
-  factory FeedbackModel.fromJson(Map<String, dynamic> json) {
-    return FeedbackModel(
-      feedbackId: json['feedback_id'],
-      bookingId: json['booking_id'],
-      userId: json['user_id'],
-      providerId: json['provider_id'],
-      rating: json['rating'],
-      comments: json['comments'],
-    );
-  }
-}
+export '../models/feedback_model.dart';
 
 class FeedBackViewScreen extends StatefulWidget {
   const FeedBackViewScreen({super.key});
@@ -56,6 +37,7 @@ class _FeedBackViewScreenState extends State<FeedBackViewScreen> {
 
   Future<void> loadPref() async {
     prefObj = await SharedPreferences.getInstance();
+    if (!mounted) return;
     setState(() {
       ip = prefObj?.getString('ip')?.trim() ?? 'NO IP';
       pid = prefObj?.getString('providerid')?.trim() ?? 'NO provider ID';
@@ -73,22 +55,26 @@ class _FeedBackViewScreenState extends State<FeedBackViewScreen> {
 
     try {
       final feedback = await getFeedback();
+      if (!mounted) return;
       setState(() {
         feedbackList = feedback;
       });
     } catch (e) {
+      if (!mounted) return;
       setState(() {
         errorMessage = 'Error: ${e.toString()}';
       });
     } finally {
-      setState(() {
-        isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          isLoading = false;
+        });
+      }
     }
   }
 
   Future<List<FeedbackModel>> getFeedback() async {
-    String url = 'http://$ip/homecare_app/fetchfeedback.php?pid=$pid';
+    final url = ApiConfig.endpoint(ip, 'fetchfeedback.php?pid=$pid');
 
     try {
       var response = await http.get(Uri.parse(url));
@@ -107,44 +93,55 @@ class _FeedBackViewScreenState extends State<FeedBackViewScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Work History'),
-      ),
-      body: isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : errorMessage.isNotEmpty
-              ? Center(child: Text(errorMessage))
-              : feedbackList.isEmpty
-                  ? const Center(child: Text('No feedback found.'))
-                  : ListView.builder(
-                      itemCount: feedbackList.length,
-                      itemBuilder: (context, index) {
-                        final feedback = feedbackList[index];
-                        return Card(
-                          margin: const EdgeInsets.all(8.0),
-                          child: ListTile(
-                            title: Text('User ID: ${feedback.userId}'),
-                            subtitle: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                RatingBar.builder(
-                                  initialRating: double.parse(feedback.rating),
-                                  minRating: 1,
-                                  itemSize: 24,
+      appBar: AppBar(title: const Text('Customer Feedback')),
+      body: SafeArea(
+        child: isLoading
+            ? const Center(child: CircularProgressIndicator())
+            : errorMessage.isNotEmpty
+                ? const AppEmptyState(
+                    title: 'Could not load feedback',
+                    message: 'Please return to this page and try again.',
+                    icon: Icons.wifi_off_outlined)
+                : AppCollectionContent<FeedbackModel>(
+                    title: 'Words from your customers',
+                    description:
+                        'See the difference your work makes, one home at a time.',
+                    items: feedbackList,
+                    emptyMessage:
+                        'Customer reviews will appear here after completed bookings.',
+                    icon: Icons.rate_review_outlined,
+                    itemBuilder: (context, feedback, index) => Card(
+                      child: Padding(
+                        padding: const EdgeInsets.all(22),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text('Customer #${feedback.userId}',
+                                style: context.theme.textTheme.titleMedium),
+                            const SizedBox(height: 6),
+                            Text('Booking #${feedback.bookingId}',
+                                style: context.theme.textTheme.bodySmall),
+                            const SizedBox(height: 18),
+                            FittedBox(
+                              fit: BoxFit.scaleDown,
+                              child: RatingBarIndicator(
+                                  rating: double.parse(feedback.rating),
+                                  itemCount: 5,
+                                  itemSize: 22,
+                                  itemPadding: const EdgeInsets.only(right: 4),
                                   itemBuilder: (context, _) => const Icon(
-                                    Icons.star,
-                                    color: Colors.amber,
-                                  ),
-                                  onRatingUpdate: (rating) {},
-                                ),
-                                const SizedBox(height: 4),
-                                Text(feedback.comments),
-                              ],
+                                      Icons.star_rounded,
+                                      color: AppColors.accent)),
                             ),
-                          ),
-                        );
-                      },
+                            const SizedBox(height: 18),
+                            Text(feedback.comments,
+                                style: context.theme.textTheme.bodyLarge),
+                          ],
+                        ),
+                      ),
                     ),
+                  ),
+      ),
     );
   }
 }

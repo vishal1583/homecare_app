@@ -1,66 +1,92 @@
 import 'package:flutter/material.dart';
-
-import '../constants/my_colors.dart';
+import 'package:flutter_application_7/constants/my_colors.dart';
+import 'package:flutter_application_7/extensions/build_context_extension.dart';
+import 'package:flutter_application_7/extensions/string_extension.dart';
 
 class ServiceAvailableCard extends StatelessWidget {
-  const ServiceAvailableCard({
-    super.key,
-    required this.leading,
-    required this.title,
-    required this.subtitle,
-    this.onPressed,
-  });
+  const ServiceAvailableCard(
+      {super.key,
+      required this.leading,
+      required this.title,
+      required this.subtitle,
+      this.location = '',
+      this.onPressed});
 
   final String leading;
   final String title;
   final String subtitle;
-  final void Function()? onPressed;
+  final String location;
+  final VoidCallback? onPressed;
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
     return Card(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(8),
-      ),
-      elevation: 2,
-      color: vanillaShade, // Using vanillaShade as card background
-      child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        leading: Text(
-          leading,
-          style: TextStyle(
-            color: theme.iconTheme.color, // softBlue from the theme
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        title: Text(
-          title,
-          style: TextStyle(
-            color: theme.textTheme.bodyLarge?.color, // Use bodyLarge for the title
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        subtitle: Text(
-          subtitle,
-          style: TextStyle(
-            color: theme.textTheme.bodySmall?.color, // Use bodySmall for subtitle
-          ),
-        ),
-        trailing: ElevatedButton(
-          onPressed: onPressed,
-          style: ButtonStyle(
-            backgroundColor: WidgetStateProperty.all(theme.colorScheme.secondary), // accentOrange
-            foregroundColor: WidgetStateProperty.all(Colors.white),
-            shape: WidgetStateProperty.all(
-              RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
-              ),
+      child: Padding(
+        padding: const EdgeInsets.all(22),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  width: 48,
+                  height: 48,
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                      color: AppColors.primarySoft,
+                      borderRadius: BorderRadius.circular(16)),
+                  child: Center(
+                      child: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Text(leading,
+                              style: const TextStyle(
+                                  color: AppColors.primary,
+                                  fontSize: 17,
+                                  fontWeight: FontWeight.w700)))),
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(title.capitalize(),
+                          style: context.theme.textTheme.titleMedium),
+                      if (location.trim().isNotEmpty) ...[
+                        const SizedBox(height: 7),
+                        Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Icon(Icons.location_on_outlined,
+                                  size: 16, color: AppColors.muted),
+                              const SizedBox(width: 4),
+                              Expanded(
+                                  child: Text(location.capitalize(),
+                                      style: context.theme.textTheme.bodySmall))
+                            ]),
+                      ],
+                    ],
+                  ),
+                ),
+              ],
             ),
-            padding: WidgetStateProperty.all(const EdgeInsets.symmetric(horizontal: 16, vertical: 12)),
-          ),
-          child: const Text('Book'),
+            const Divider(height: 32),
+            Text('SPECIALTIES',
+                style: context.theme.textTheme.labelSmall
+                    ?.copyWith(color: AppColors.muted)),
+            const SizedBox(height: 8),
+            Text(
+                subtitle.trim().isEmpty
+                    ? 'View this provider for more details.'
+                    : subtitle.capitalize(),
+                style: context.theme.textTheme.bodyLarge),
+            const SizedBox(height: 22),
+            SizedBox(
+                width: double.infinity,
+                child: OutlinedButton(
+                    onPressed: onPressed, child: const Text('View provider'))),
+          ],
         ),
       ),
     );

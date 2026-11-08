@@ -1,5 +1,11 @@
 import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:flutter_application_7/extensions/build_context_extension.dart';
+import 'package:flutter_application_7/services/api_config.dart';
+import 'package:flutter_application_7/utils/form_validators.dart';
+import 'package:flutter_application_7/widgets/app_form_page.dart';
+import 'package:flutter_application_7/widgets/password_field.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -26,6 +32,7 @@ class _SignUpScreen2State extends State<SignUpScreen2> {
 
   Future<void> loadPref() async {
     prefObj = await SharedPreferences.getInstance();
+    if (!mounted) return;
     setState(() {
       ip = prefObj?.getString('ip') ?? 'No IP Address';
     });
@@ -52,9 +59,8 @@ class _SignUpScreen2State extends State<SignUpScreen2> {
     String location = _locationController.text.trim();
     String skills = _skillsController.text.trim();
 
-    if (password == confirmedpassword) 
-    {
-      String url = 'http://$ip/homecare_app/providersignup.php';
+    if (password == confirmedpassword) {
+      final url = ApiConfig.endpoint(ip, 'providersignup.php');
 
       try {
         var response = await http.post(
@@ -68,20 +74,32 @@ class _SignUpScreen2State extends State<SignUpScreen2> {
             'skills': skills,
           },
         );
+        if (!mounted) return;
 
         var jsonString = jsonDecode(response.body);
         if (jsonString['message'] == 'success') {
-          Navigator.pop(context);
-          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Registration Successful')));
+          context.navigator.pop();
+          context.scaffoldMessenger
+            ..hideCurrentSnackBar()
+            ..showSnackBar(
+                const SnackBar(content: Text('Registration Successful')));
         } else {
-          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Registration Failed')));
+          context.scaffoldMessenger
+            ..hideCurrentSnackBar()
+            ..showSnackBar(
+                const SnackBar(content: Text('Registration Failed')));
         }
       } catch (e) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+        if (!mounted) return;
+        context.scaffoldMessenger
+          ..hideCurrentSnackBar()
+          ..showSnackBar(SnackBar(content: Text('Error: $e')));
       }
-    } else 
-    {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Password doesn\'t match')));
+    } else {
+      context.scaffoldMessenger
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+            const SnackBar(content: Text('Password doesn\'t match')));
     }
 
     setState(() {
@@ -103,86 +121,79 @@ class _SignUpScreen2State extends State<SignUpScreen2> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Service Provider Registration'),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 25.0),
-        child: Form(
-          key: _signUpKey,
-          child: isLoading
-              ? const Center(child: CircularProgressIndicator()) // Show loader when isLoading is true
-              : Column(
-                  children: [
-                    const SizedBox(height: 75),
-                    TextFormField(
-                      validator: (value) =>
-                          (value!.isEmpty) ? 'invalid input' : null,
-                      controller: _emailController,
-                      decoration:
-                          const InputDecoration(labelText: 'Enter your E-Mail'),
-                    ),
-                    const SizedBox(height: 15),
-                    TextFormField(
-                      validator: (value) =>
-                          (value!.isEmpty) ? 'invalid input' : null,
-                      controller: _passwordController,
-                      decoration:
-                          const InputDecoration(labelText: 'Enter your Password :'),
-                    ),
-                    const SizedBox(height: 15),
-                    TextFormField(
-                      validator: (value) =>
-                          (value!.isEmpty) ? 'invalid input' : null,
-                      controller: _confirmedPasswordController,
-                      decoration: const InputDecoration(
-                          labelText: 'Enter your Password again'),
-                    ),
-                    const SizedBox(height: 15),
-                    TextFormField(
-                      validator: (value) =>
-                          (value!.isEmpty) ? 'invalid input' : null,
-                      controller: _usernameController,
-                      decoration: const InputDecoration(labelText: 'Enter your Name'),
-                    ),
-                    const SizedBox(height: 15),
-                    TextFormField(
-                      validator: (value) =>
-                          (value!.isEmpty) ? 'invalid input' : null,
-                      controller: _phoneController,
-                      decoration:
-                          const InputDecoration(labelText: 'Enter your Phone number'),
-                    ),
-                    const SizedBox(height: 15),
-                    TextFormField(
-                      validator: (value) =>
-                          (value!.isEmpty) ? 'invalid input' : null,
-                      controller: _skillsController,
-                      decoration:
-                          const InputDecoration(labelText: 'Enter your Skills'),
-                    ),
-                    const SizedBox(height: 15),
-                    TextFormField(
-                      validator: (value) =>
-                          (value!.isEmpty) ? 'invalid input' : null,
-                      controller: _locationController,
-                      decoration:
-                          const InputDecoration(labelText: 'Enter your Address'),
-                    ),
-                    const SizedBox(height: 30),
-                    ElevatedButton(
-                      onPressed: () {
-                        if (_signUpKey.currentState!.validate()) {
-                          signUp();
-                        }
-                      },
-                      child: const Text('Register'),
-                    )
-                  ],
-                ),
+    return AppFormPage(
+      title: 'Service Provider Registration',
+      heading: 'Bring your skills home.',
+      description:
+          'Create a provider account and let customers find your services.',
+      icon: Icons.handyman_outlined,
+      formKey: _signUpKey,
+      isLoading: isLoading,
+      children: [
+        TextFormField(
+          textInputAction: TextInputAction.next,
+          keyboardType: TextInputType.emailAddress,
+          validator: FormValidators.required('invalid input'),
+          controller: _emailController,
+          decoration: const InputDecoration(
+              prefixIcon: Icon(Icons.email_outlined),
+              labelText: 'Email address'),
         ),
-      ),
+        const SizedBox(height: 15),
+        PasswordField(
+            controller: _passwordController,
+            label: 'Password',
+            validator: FormValidators.required('invalid input')),
+        const SizedBox(height: 15),
+        PasswordField(
+            controller: _confirmedPasswordController,
+            label: 'Confirm password',
+            validator: FormValidators.required('invalid input')),
+        const SizedBox(height: 15),
+        TextFormField(
+          textInputAction: TextInputAction.next,
+          validator: FormValidators.required('invalid input'),
+          controller: _usernameController,
+          decoration: const InputDecoration(
+              prefixIcon: Icon(Icons.person_outline_rounded),
+              labelText: 'Full name'),
+        ),
+        const SizedBox(height: 15),
+        TextFormField(
+          textInputAction: TextInputAction.next,
+          keyboardType: TextInputType.phone,
+          validator: FormValidators.required('invalid input'),
+          controller: _phoneController,
+          decoration: const InputDecoration(
+              prefixIcon: Icon(Icons.phone_outlined),
+              labelText: 'Phone number'),
+        ),
+        const SizedBox(height: 15),
+        TextFormField(
+          textInputAction: TextInputAction.next,
+          validator: FormValidators.required('invalid input'),
+          controller: _skillsController,
+          decoration: const InputDecoration(labelText: 'Your skills'),
+        ),
+        const SizedBox(height: 15),
+        TextFormField(
+          textInputAction: TextInputAction.next,
+          validator: FormValidators.required('invalid input'),
+          controller: _locationController,
+          decoration: const InputDecoration(
+              prefixIcon: Icon(Icons.location_on_outlined),
+              labelText: 'Service location'),
+        ),
+        const SizedBox(height: 30),
+        ElevatedButton(
+          onPressed: () {
+            if (_signUpKey.currentState!.validate()) {
+              signUp();
+            }
+          },
+          child: const Text('Register'),
+        )
+      ],
     );
   }
 }

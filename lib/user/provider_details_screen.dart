@@ -1,10 +1,16 @@
 import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_application_7/constants/my_colors.dart';
+import 'package:flutter_application_7/extensions/build_context_extension.dart';
+import 'package:flutter_application_7/extensions/string_extension.dart';
+import 'package:flutter_application_7/services/api_config.dart';
+import 'package:flutter_application_7/widgets/app_detail_page.dart';
 import 'package:flutter_application_7/widgets/date.dart';
+import 'package:flutter_application_7/widgets/provider_detail_row.dart';
 import 'package:flutter_application_7/widgets/time.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ProviderDetailsScreen extends StatefulWidget {
   const ProviderDetailsScreen({
@@ -43,6 +49,7 @@ class _ProviderDetailsScreenState extends State<ProviderDetailsScreen> {
   // Load the IP address
   Future<void> _loadDetails() async {
     _prefObj = await SharedPreferences.getInstance();
+    if (!mounted) return;
     setState(() {
       ip = _prefObj?.getString('ip') ?? 'No IP';
       userId = _prefObj?.getString('userid') ?? 'no user id';
@@ -67,135 +74,94 @@ class _ProviderDetailsScreenState extends State<ProviderDetailsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Provider Details'),
-        elevation: 0,
-      ),
-      body: SingleChildScrollView(
-        scrollDirection: Axis.vertical,
-        padding: const EdgeInsets.all(16.0),
-        child: Center(
-          child: Card(
-            color: vanillaShade,
-            elevation: 8,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.all(20.0),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  const Center(
-                    child: CircleAvatar(
-                      radius: 40,
-                      backgroundColor: softBlue,
-                      child: Icon(
-                        Icons.person,
-                        size: 40,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  _buildMyCard(
-                    icon: Icons.person,
-                    title: 'Name',
-                    value: widget.providerName,
-                  ),
-                  _buildMyCard(
-                    icon: Icons.email,
+    return AppDetailPage(
+      title: 'Provider Details',
+      children: [
+        Card(
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const CircleAvatar(
+                    radius: 32,
+                    backgroundColor: AppColors.primarySoft,
+                    child: Icon(Icons.person_outline_rounded, size: 32)),
+                const SizedBox(height: 20),
+                Text(widget.providerName.capitalize(),
+                    style: context.theme.textTheme.headlineMedium),
+                const SizedBox(height: 8),
+                Text(widget.providerSkills.capitalize(),
+                    style: context.theme.textTheme.bodyLarge),
+                const Divider(height: 36),
+                ProviderDetailRow(
+                    icon: Icons.email_outlined,
                     title: 'Email',
-                    value: widget.providerEmail,
-                  ),
-                  _buildMyCard(
-                    icon: Icons.phone,
+                    value: widget.providerEmail),
+                ProviderDetailRow(
+                    icon: Icons.phone_outlined,
                     title: 'Phone',
-                    value: widget.providerPhoneNo,
-                  ),
-                  _buildMyCard(
-                    icon: Icons.location_on,
+                    value: widget.providerPhoneNo),
+                ProviderDetailRow(
+                    icon: Icons.location_on_outlined,
                     title: 'Location',
-                    value: widget.providerLocation,
-                  ),
-                  _buildMyCard(
-                    icon: Icons.build,
-                    title: 'Skills',
-                    value: widget.providerSkills,
-                  ),
-                  // const SizedBox(height: 2),
-
-                  // Pass the callback to update selected date
-                  // Pass the callback to update selected time
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      DateScreen(updateSelectedDate: _updateSelectedDate),
-                      const SizedBox(width: 25),
-                      TimeScreen(updateSelectedTime: _updateSelectedTime),
-                    ],
-                  ),
-
-
-                  const SizedBox(height: 20),
-                  Text(
-                    selectedDate != null
-                        ? "Selected Date: $selectedDate"
-                        : "Please select your date",
-                    style: const TextStyle(fontSize: 18,fontWeight: FontWeight.bold),
-                  ),
-                  Text(
-                    selectedTime != null
-                        ? "Selected Time: $selectedTime"
-                        : "Please select your time",
-                    style: const TextStyle(fontSize: 18,fontWeight: FontWeight.bold),
-                  ),
-
-                  const SizedBox(height: 20),
-
-                  // Book Service button
-                  Center(
-                    child: ElevatedButton(
-                      onPressed: isServiceBookable()
-                        ? () {
-                            bookMyService(
-                              userId,
-                              providerId,
-                              selectedDate!,
-                              selectedTime!,
-                            );
-                          }
-                        : null,               //disable button
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor:
-                            isServiceBookable() ? accentOrange : Colors.grey.shade100,
-                      ),
-                      child: const Text(
-                        'Book Service',
-                        // style: Theme.of(context).textTheme.titleMedium?.copyWith(color: Colors.white,fontWeight: FontWeight.bold)
-                        ),
-                    ),
-                  ),
-                ],
-              ),
+                    value: widget.providerLocation),
+              ],
             ),
           ),
         ),
-      ),
+        const SizedBox(height: 28),
+        Text('Make time for your home.',
+            style: context.theme.textTheme.titleLarge),
+        const SizedBox(height: 8),
+        const Text(
+            'Choose your preferred date and time. Your provider will review the request.'),
+        const SizedBox(height: 20),
+        Card(
+          child: Padding(
+            padding: const EdgeInsets.all(22),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text('Your visit', style: context.theme.textTheme.titleMedium),
+                const SizedBox(height: 18),
+                Wrap(
+                  spacing: 12,
+                  runSpacing: 12,
+                  children: [
+                    DateScreen(updateSelectedDate: _updateSelectedDate),
+                    TimeScreen(updateSelectedTime: _updateSelectedTime),
+                  ],
+                ),
+                const SizedBox(height: 22),
+                Text(isServiceBookable()
+                    ? 'Your preferred visit: $selectedDate at $selectedTime.'
+                    : 'Select both a date and time to request a booking.'),
+                const SizedBox(height: 20),
+                ElevatedButton(
+                  onPressed: isServiceBookable()
+                      ? () => bookMyService(
+                          userId, providerId, selectedDate!, selectedTime!)
+                      : null,
+                  child: const Text('Request booking'),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
     );
   }
 
-  void bookMyService(String userId, String providerId, String date, String time)async 
-  {
-    print("...Booking Details...");
-    print("User ID: $userId");
-    print("Provider ID: $providerId");
-    print("Selected Date: $date");
-    print("Selected Time: $time");
+  void bookMyService(
+      String userId, String providerId, String date, String time) async {
+    debugPrint("...Booking Details...");
+    debugPrint("User ID: $userId");
+    debugPrint("Provider ID: $providerId");
+    debugPrint("Selected Date: $date");
+    debugPrint("Selected Time: $time");
 
-    String url = 'http://$ip/homecare_app/userbooking.php';
+    final url = ApiConfig.endpoint(ip, 'userbooking.php');
 
     var response = await http.post(
       Uri.parse(url),
@@ -204,62 +170,27 @@ class _ProviderDetailsScreenState extends State<ProviderDetailsScreen> {
         'provider_id': providerId,
         'date_of_booking': date,
         'time_of_booking': time,
-        // 'status': '',
       },
     );
+    if (!mounted) return;
 
     var jsonData = jsonDecode(response.body);
     var jsonString = jsonData['message'];
-    print('BookingScreen jsonMessage: $jsonString');
+    debugPrint('BookingScreen jsonMessage: $jsonString');
 
     if (jsonString == 'success') {
-      Navigator.pop(context);
-      Navigator.pop(context);
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Service booked successfully! Please wait for Service Provider to respond')));
-    }else{
-      Navigator.pop(context);
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Service booking Failed')));
+      context.navigator.pop();
+      context.navigator.pop();
+      context.scaffoldMessenger
+        ..hideCurrentSnackBar()
+        ..showSnackBar(const SnackBar(
+            content: Text(
+                'Service booked successfully! Please wait for Service Provider to respond')));
+    } else {
+      context.navigator.pop();
+      context.scaffoldMessenger
+        ..hideCurrentSnackBar()
+        ..showSnackBar(const SnackBar(content: Text('Service booking Failed')));
     }
-  }
-
-  Widget _buildMyCard({
-    required IconData icon,
-    required String title,
-    required String value,
-  }) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: <Widget>[
-          Icon(icon, color: Colors.blueAccent, size: 24),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                Text(
-                  title,
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.grey,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  value,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w500,
-                    color: Colors.black87,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
   }
 }

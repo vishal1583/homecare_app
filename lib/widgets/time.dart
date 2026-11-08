@@ -17,6 +17,7 @@ class _TimeScreenState extends State<TimeScreen> {
       context: context,
       initialTime: TimeOfDay.now(),
     ).then((TimeOfDay? time) {
+      if (!mounted || !context.mounted) return;
       if (time != null) {
         setState(() {
           selectedTime = time.format(context);
@@ -28,23 +29,10 @@ class _TimeScreenState extends State<TimeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        // Text(
-        //   selectedTime != null
-        //       ? "Selected Time: $selectedTime"
-        //       : "No time selected",
-        //   style: const TextStyle(fontSize: 18),
-        // ),
-        const SizedBox(height: 15),
-        ElevatedButton(
-          onPressed: () {
-            _selectTime(context);
-          },
-          child: const Icon(Icons.schedule_rounded),
-        ),
-      ],
+    return OutlinedButton.icon(
+      onPressed: () => _selectTime(context),
+      icon: const Icon(Icons.schedule_rounded, size: 18),
+      label: Text(selectedTime ?? 'Choose time'),
     );
   }
 }

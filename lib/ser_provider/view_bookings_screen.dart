@@ -1,9 +1,13 @@
 import 'dart:convert';
-import 'package:dart_casing/dart_casing.dart';
+
 import 'package:flutter/material.dart';
+import 'package:flutter_application_7/extensions/build_context_extension.dart';
 import 'package:flutter_application_7/models/data_models.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_application_7/services/api_config.dart';
+import 'package:flutter_application_7/widgets/app_collection_page.dart';
+import 'package:flutter_application_7/widgets/booking_card.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ViewBookingsScreen extends StatefulWidget {
   const ViewBookingsScreen({super.key});
@@ -25,6 +29,7 @@ class _ViewBookingsScreenState extends State<ViewBookingsScreen> {
 
   Future<void> loadDetails() async {
     prefObj = await SharedPreferences.getInstance();
+    if (!mounted) return;
     setState(() {
       ip = prefObj?.getString('ip') ?? 'No IP';
       pid = prefObj?.getString('providerid') ?? 'No provider ID';
@@ -32,13 +37,13 @@ class _ViewBookingsScreenState extends State<ViewBookingsScreen> {
   }
 
   Future<List<Bookings>> fetchMyBookings() async {
-    String url = 'http://$ip/homecare_app/providerfetchbooking.php?pid=$pid';
+    final url = ApiConfig.endpoint(ip, 'providerfetchbooking.php?pid=$pid');
 
     try {
       var response = await http.get(Uri.parse(url));
       if (response.statusCode == 200) {
         final List<dynamic> data = jsonDecode(response.body);
-        print(data);
+        debugPrint('Fetched ${data.length} provider bookings');
 
         // Exclude bookings with status 'accepted' or 'rejected'
         return data
@@ -54,7 +59,14 @@ class _ViewBookingsScreenState extends State<ViewBookingsScreen> {
   }
 
   void acceptBooking(String bookingId) async {
-    String url = 'http://$ip/homecare_app/provideraccepted.php';
+    final confirmed = await context.confirmAction(
+      title: 'Accept booking #$bookingId?',
+      message: 'This request will move to your accepted work.',
+      confirmLabel: 'Accept booking',
+    );
+    if (!confirmed || !mounted) return;
+
+    final url = ApiConfig.endpoint(ip, 'provideraccepted.php');
 
     var response = await http.post(
       Uri.parse(url),
@@ -63,20 +75,30 @@ class _ViewBookingsScreenState extends State<ViewBookingsScreen> {
         'id': bookingId,
       },
     );
+    if (!mounted) return;
 
     var jsonData = jsonDecode(response.body);
     var jsonString = jsonData['message'];
 
     if (jsonString == 'success') {
-      print('Booking $bookingId accepted');
+      debugPrint('Booking $bookingId accepted');
       setState(() {}); // Refresh bookings
     } else {
-      print('Booking acceptance failed');
+      debugPrint('Booking acceptance failed');
     }
   }
 
   void rejectBooking(String bookingId) async {
-    String url = 'http://$ip/homecare_app/providerrejected.php';
+    final confirmed = await context.confirmAction(
+      title: 'Reject booking #$bookingId?',
+      message:
+          'This request will be marked as rejected and removed from your pending requests.',
+      confirmLabel: 'Reject booking',
+      destructive: true,
+    );
+    if (!confirmed || !mounted) return;
+
+    final url = ApiConfig.endpoint(ip, 'providerrejected.php');
 
     var response = await http.post(
       Uri.parse(url),
@@ -85,164 +107,40 @@ class _ViewBookingsScreenState extends State<ViewBookingsScreen> {
         'id': bookingId,
       },
     );
+    if (!mounted) return;
 
     var jsonData = jsonDecode(response.body);
     var jsonString = jsonData['message'];
 
     if (jsonString == 'success') {
-      print('Booking $bookingId rejected');
+      debugPrint('Booking $bookingId rejected');
       setState(() {}); // Refresh bookings
     } else {
-      print('Booking rejection failed');
+      debugPrint('Booking rejection failed');
     }
   }
-
-  Color getStatusColor(String status) {
-    switch (status) {
-       case 'accepted':
-      return Colors.green; // Represents a positive state.
-    case 'rejected':
-      return Colors.red; // Represents a negative state.
-    case 'requested':
-      return Colors.orange; // Represents a pending or intermediate state.
-    case 'completed':
-      return Colors.blue; // Represents a task successfully finished.
-    case 'paid':
-      return Colors.teal; // Represents a financial transaction successfully made.
-    default:
-      return Colors.grey; // Fallback for unknown statuses.
-    }
-  }
-
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('View Bookings'),
-      ),
-      body: FutureBuilder<List<Bookings>>(
-        future: fetchMyBookings(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(
-              child: CircularProgressIndicator(),
-            );
-          } else if (snapshot.hasError) {
-            return Center(
-              child: Text(
-                'Error: ${snapshot.error}',
-                style: const TextStyle(color: Colors.red),
-              ),
-            );
-          } else if (snapshot.hasData && snapshot.data!.isEmpty) {
-            return const Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    Icons.hourglass_empty,
-                    size: 50,
-                    color: Colors.grey,
-                  ),
-                  SizedBox(height: 10),
-                  Text(
-                    'No bookings available',
-                    style: TextStyle(fontSize: 16, color: Colors.black54),
-                  ),
-                ],
-              ),
-            );
-          } else {                              // snapshot has data
-            final bookings = snapshot.data!;
-            return ListView.builder(
-              itemCount: bookings.length,
-              itemBuilder: (context, index) {
-                final providerbookings = bookings[index];
-                return Card(
-                  margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  elevation: 6,
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: <Widget>[
-                        Text(
-                          'Booking ID: ${providerbookings.id}',
-                          style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        const Divider(),
-                        const SizedBox(height: 8),
-                        Text(
-                          'Customer Name: ${Casing.pascalCase(providerbookings.name ?? 'No Name')}',
-                          style: const TextStyle(fontSize: 16),
-                        ),
-                        // Text(
-                        //   'Provider ID: ${providerbookings.providerId}',
-                        //   style: const TextStyle(fontSize: 16),
-                        // ),
-                        Text(
-                          'Date: ${providerbookings.dateOfBooking}',
-                          style: const TextStyle(fontSize: 16),
-                        ),
-                        Text(
-                          'Time: ${providerbookings.timeOfBooking}',
-                          style: const TextStyle(fontSize: 16),
-                        ),
-                        Row(
-                          children: [
-                            const Text(
-                              'Status: ',
-                              style: TextStyle(fontSize: 16),
-                            ),
-                            Text(
-                              Casing.pascalCase(providerbookings.status),
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                color: getStatusColor(providerbookings.status),
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 16),
-                        providerbookings.status == 'requested'
-                            ? Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: [
-                                  ElevatedButton(
-                                    onPressed: () {
-                                      acceptBooking(providerbookings.id);
-                                    },
-                                    child: const Text('Accept'),
-                                  ),
-                                  ElevatedButton(
-                                    onPressed: () {
-                                      rejectBooking(providerbookings.id);
-                                    },
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: Colors.red,
-                                    ),
-                                    child: const Text('Reject'),
-                                  ),
-                                ],
-                              )
-                            : const SizedBox(),
-                      ],
-                    ),
-                  ),
-                );
-              },
-            );
-          }
-        },
+    return AppCollectionPage<Bookings>(
+      title: 'Booking Requests',
+      description: 'A new opportunity to make someone feel more at home.',
+      future: fetchMyBookings(),
+      emptyMessage: 'New customer requests will appear here. Check back soon.',
+      onRetry: () => setState(() {}),
+      itemBuilder: (context, booking, index) => BookingCard(
+        booking: booking,
+        name: booking.name ?? 'No Name',
+        actions: [
+          if (booking.status == 'requested') ...[
+            ElevatedButton(
+                onPressed: () => acceptBooking(booking.id),
+                child: const Text('Accept')),
+            OutlinedButton(
+                onPressed: () => rejectBooking(booking.id),
+                child: const Text('Reject')),
+          ],
+        ],
       ),
     );
   }

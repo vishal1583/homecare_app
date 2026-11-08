@@ -1,7 +1,12 @@
 import 'dart:convert';
+
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_application_7/extensions/build_context_extension.dart';
+import 'package:flutter_application_7/services/api_config.dart';
+import 'package:flutter_application_7/widgets/app_collection_page.dart';
+import 'package:flutter_application_7/widgets/booking_card.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/data_models.dart';
 
@@ -25,6 +30,7 @@ class _AcceptedWorkScreenState extends State<AcceptedWorkScreen> {
 
   Future<void> loadPref() async {
     prefObj = await SharedPreferences.getInstance();
+    if (!mounted) return;
     setState(() {
       ip = prefObj?.getString('ip') ?? 'No IP address';
       pId = prefObj?.getString('providerid') ?? 'No provider ID';
@@ -32,7 +38,7 @@ class _AcceptedWorkScreenState extends State<AcceptedWorkScreen> {
   }
 
   Future<List<Bookings>> fetchMyAcceptedWorks() async {
-    String url = 'http://$ip/homecare_app/fetchmyworks.php?pid=$pId';
+    final url = ApiConfig.endpoint(ip, 'fetchmyworks.php?pid=$pId');
 
     try {
       var response = await http.get(Uri.parse(url));
@@ -49,7 +55,15 @@ class _AcceptedWorkScreenState extends State<AcceptedWorkScreen> {
   }
 
   Future<void> markWorkAsCompleted(String bookingId) async {
-    String url = 'http://$ip/homecare_app/markworkcompleted.php';
+    final confirmed = await context.confirmAction(
+      title: 'Mark booking #$bookingId complete?',
+      message:
+          'Confirm that the work is finished. The customer can then record their payment.',
+      confirmLabel: 'Mark complete',
+    );
+    if (!confirmed || !mounted) return;
+
+    final url = ApiConfig.endpoint(ip, 'markworkcompleted.php');
 
     try {
       var response = await http.post(
@@ -58,94 +72,44 @@ class _AcceptedWorkScreenState extends State<AcceptedWorkScreen> {
           'id': bookingId,
         },
       );
+      if (!mounted) return;
 
       if (response.statusCode == 200) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Work marked as completed!')),
-        );
+        context.scaffoldMessenger
+          ..hideCurrentSnackBar()
+          ..showSnackBar(
+            const SnackBar(content: Text('Work marked as completed!')),
+          );
         setState(() {}); // Refresh the list
       } else {
         throw Exception('Failed to update work status');
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: $e')),
-      );
+      if (!mounted) return;
+      context.scaffoldMessenger
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          SnackBar(content: Text('Error: $e')),
+        );
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Accepted Works'),
-      ),
-      body: FutureBuilder<List<Bookings>>(
-        future: fetchMyAcceptedWorks(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(
-              child: CircularProgressIndicator(),
-            );
-          } else if (snapshot.hasError) {
-            return Center(
-              child: Text(
-                'Error: ${snapshot.error}',
-                style: const TextStyle(color: Colors.red),
-              ),
-            );
-          } else if (snapshot.hasData && snapshot.data!.isEmpty) {
-            return const Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    Icons.hourglass_empty,
-                    size: 50,
-                    color: Colors.grey,
-                  ),
-                  SizedBox(height: 10),
-                  Text(
-                    'No bookings available',
-                    style: TextStyle(fontSize: 16, color: Colors.black54),
-                  ),
-                ],
-              ),
-            );
-          } else {
-            final bookings = snapshot.data!;
-            return ListView.builder(
-              padding: const EdgeInsets.all(8.0),
-              itemCount: bookings.length,
-              itemBuilder: (context, index) {
-                final booking = bookings[index];
-                return Card(
-                  margin: const EdgeInsets.symmetric(vertical: 8.0),
-                  child: ListTile(
-                    title: Text(
-                      'Booking ID: ${booking.id}',
-                      style: const TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    subtitle: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text('Date: ${booking.dateOfBooking}'),
-                        Text('Time: ${booking.timeOfBooking}'),
-                        Text('Status: ${booking.status}'),
-                      ],
-                    ),
-                    trailing: ElevatedButton(
-                      onPressed: () {
-                        markWorkAsCompleted(booking.id);
-                      },
-                      child: const Text('Complete'),
-                    ),
-                  ),
-                );
-              },
-            );
-          }
-        },
+    return AppCollectionPage<Bookings>(
+      title: 'Accepted Work',
+      description: 'Your upcoming visits and the work you have taken on.',
+      future: fetchMyAcceptedWorks(),
+      emptyMessage: 'Accept a booking request to see your next job here.',
+      onRetry: () => setState(() {}),
+      itemBuilder: (context, booking, index) => BookingCard(
+        booking: booking,
+        name: booking.name ?? 'Scheduled service',
+        actions: [
+          ElevatedButton(
+              onPressed: () => markWorkAsCompleted(booking.id),
+              child: const Text('Mark complete'))
+        ],
       ),
     );
   }

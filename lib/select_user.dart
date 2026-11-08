@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_application_7/constants/my_colors.dart';
+import 'package:flutter_application_7/extensions/build_context_extension.dart';
+
 import 'ser_provider/login_screen2.dart';
 import 'user/login_screen1.dart';
-import 'constants/my_colors.dart';
 
 class SelectUserScreen extends StatelessWidget {
   const SelectUserScreen({super.key});
@@ -9,85 +11,115 @@ class SelectUserScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Select User Type'),
-      ),
-      body: Center(
-        child: Container(
-          color: vanilla,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12.0),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: <Widget>[
-
-                SizedBox(height: 200,width: 200,child: Image.asset('assets/man.png'),),
-
-                const SizedBox(height: 15),
-
-                // Title
-                const Text(
-                  'Welcome! Please select your user type:',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: darkBlue,
-                  ),
-                ),
-                const SizedBox(height: 40),
-
-                // General User Button
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: softBlue,
-                    minimumSize: const Size(200, 50),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
+      appBar: AppBar(title: const Text('Homecare')),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(24, 16, 24, 36),
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 620),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(24),
+                    decoration: BoxDecoration(
+                        color: AppColors.primaryDark,
+                        borderRadius: BorderRadius.circular(28)),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Icon(Icons.home_work_outlined,
+                            color: Color(0xFFBEE3CD), size: 48),
+                        const SizedBox(height: 24),
+                        Text('HELP, RIGHT AT HOME',
+                            style: context.theme.textTheme.labelSmall
+                                ?.copyWith(color: const Color(0xFFBEE3CD))),
+                        const SizedBox(height: 12),
+                        Text('A little help.\nA better home.',
+                            style: context.theme.textTheme.headlineLarge
+                                ?.copyWith(color: Colors.white)),
+                        const SizedBox(height: 14),
+                        const Text(
+                            'Connect with local service providers and keep your home running smoothly.',
+                            style: TextStyle(
+                                color: Color(0xFFD6E7DE),
+                                fontSize: 16,
+                                height: 1.5)),
+                      ],
                     ),
                   ),
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => const LoginScreen1()),
-                    );
-                  },
-                  child: const Text(
-                    'General User',
-                    style: TextStyle(
-                      fontSize: 18,
-                      color: vanillaShade,
-                    ),
+                  const SizedBox(height: 32),
+                  Text('How can we help?',
+                      style: context.theme.textTheme.titleLarge),
+                  const SizedBox(height: 8),
+                  const Text('Choose how you would like to use Homecare.'),
+                  const SizedBox(height: 20),
+                  _RoleCard(
+                    title: 'General User',
+                    description:
+                        'Find a service, book a visit, and manage your home.',
+                    icon: Icons.chair_outlined,
+                    onTap: () => context.navigator.push(MaterialPageRoute(
+                        builder: (context) => const LoginScreen1())),
                   ),
-                ),
-
-                const SizedBox(height: 20),
-
-                // Service Provider Button
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: softBlue,
-                    minimumSize: const Size(200, 50),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
+                  const SizedBox(height: 14),
+                  _RoleCard(
+                    title: 'Service Provider',
+                    description:
+                        'Share your skills, respond to requests, and manage work.',
+                    icon: Icons.handyman_outlined,
+                    onTap: () => context.navigator.push(MaterialPageRoute(
+                        builder: (context) => const LoginScreen2())),
                   ),
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => const LoginScreen2()),
-                    );
-                  },
-                  child: const Text(
-                    'Service Provider',
-                    style: TextStyle(
-                      fontSize: 18,
-                      color: vanillaShade,
-                    ),
-                  ),
-                ),
-              ],
+                ],
+              ),
             ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _RoleCard extends StatelessWidget {
+  const _RoleCard(
+      {required this.title,
+      required this.description,
+      required this.icon,
+      required this.onTap});
+
+  final String title;
+  final String description;
+  final IconData icon;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      child: InkWell(
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.all(22),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              CircleAvatar(
+                  backgroundColor: AppColors.primarySoft, child: Icon(icon)),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(title, style: context.theme.textTheme.titleMedium),
+                    const SizedBox(height: 6),
+                    Text(description),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 12),
+              const Icon(Icons.arrow_forward_rounded, size: 18),
+            ],
           ),
         ),
       ),

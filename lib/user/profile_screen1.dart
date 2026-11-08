@@ -1,7 +1,12 @@
 import 'dart:convert';
+
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_application_7/extensions/build_context_extension.dart';
+import 'package:flutter_application_7/services/api_config.dart';
+import 'package:flutter_application_7/utils/form_validators.dart';
+import 'package:flutter_application_7/widgets/app_form_page.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ProfileScreen1 extends StatefulWidget {
   const ProfileScreen1({super.key});
@@ -38,6 +43,7 @@ class _ProfileScreen1State extends State<ProfileScreen1> {
 
   Future<void> loadIP() async {
     userPrefs = await SharedPreferences.getInstance();
+    if (!mounted) return;
     setState(() {
       ip = userPrefs?.getString('ip') ?? 'No IP Address';
     });
@@ -56,6 +62,7 @@ class _ProfileScreen1State extends State<ProfileScreen1> {
     });
 
     userPrefs = await SharedPreferences.getInstance();
+    if (!mounted) return;
 
     setState(() {
       id = userPrefs?.getString('userid') ?? 'no id';
@@ -77,7 +84,7 @@ class _ProfileScreen1State extends State<ProfileScreen1> {
       isLoading = true;
     });
 
-    String url = 'http://$ip/homecare_app/updateuser.php';
+    final url = ApiConfig.endpoint(ip, 'updateuser.php');
 
     try {
       var response = await http.post(
@@ -90,31 +97,42 @@ class _ProfileScreen1State extends State<ProfileScreen1> {
           'address': addressController.text,
         },
       );
+      if (!mounted) return;
 
       var jsonBody = jsonDecode(response.body);
       var jsonString = jsonBody['message'];
 
       if (jsonString == 'success') {
         await userPrefs?.setString('username', usernameController.text);
+        if (!mounted) return;
         await userPrefs?.setString('useremail', emailController.text);
+        if (!mounted) return;
         await userPrefs?.setString('userphone', phoneController.text);
+        if (!mounted) return;
         await userPrefs?.setString('useraddress', addressController.text);
+        if (!mounted) return;
 
-        Navigator.pop(context);
-        ScaffoldMessenger.of(context)
-            .showSnackBar(const SnackBar(content: Text('Updated')));
+        context.navigator.pop();
+        context.scaffoldMessenger
+          ..hideCurrentSnackBar()
+          ..showSnackBar(const SnackBar(content: Text('Updated')));
       } else {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(const SnackBar(content: Text('Updation Failed')));
+        context.scaffoldMessenger
+          ..hideCurrentSnackBar()
+          ..showSnackBar(const SnackBar(content: Text('Updation Failed')));
       }
     } catch (e) {
-      print('updation error: $e');
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text('Error: $e')));
+      if (!mounted) return;
+      debugPrint('User profile update failed: $e');
+      context.scaffoldMessenger
+        ..hideCurrentSnackBar()
+        ..showSnackBar(SnackBar(content: Text('Error: $e')));
     } finally {
-      setState(() {
-        isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          isLoading = false;
+        });
+      }
     }
   }
 
@@ -136,68 +154,69 @@ class _ProfileScreen1State extends State<ProfileScreen1> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('User Profile')),
-      body: isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 25.0),
-              child: Form(
-                key: _updateKey,
-                child: Column(
-                  children: [
-                    const SizedBox(height: 45),
-                    TextFormField(
-                      validator: (value) =>
-                          (value!.isEmpty) ? 'Please enter a valid email' : null,
-                      controller: emailController,
-                      decoration: const InputDecoration(
-                          labelText: 'Enter your E-Mail'),
-                    ),
-                    const SizedBox(height: 13),
-                    TextFormField(
-                      validator: (value) =>
-                          (value!.isEmpty) ? 'Please enter your name' : null,
-                      controller: usernameController,
-                      decoration: const InputDecoration(
-                          labelText: 'Enter your Name'),
-                    ),
-                    const SizedBox(height: 13),
-                    TextFormField(
-                      validator: (value) => (value!.isEmpty)
-                          ? 'Please enter a valid phone number'
-                          : null,
-                      controller: phoneController,
-                      decoration: const InputDecoration(
-                          labelText: 'Enter your Phone number'),
-                    ),
-                    const SizedBox(height: 13),
-                    TextFormField(
-                      validator: (value) =>
-                          (value!.isEmpty) ? 'Please enter your address' : null,
-                      controller: addressController,
-                      decoration: const InputDecoration(
-                          labelText: 'Enter your Address'),
-                    ),
-                    const SizedBox(height: 30),
-                    ElevatedButton(
-                      onPressed: () {
-                        if (_updateKey.currentState!.validate()) {
-                          if (hasChanges()) {
-                            updateUser();
-                          } else {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                    content: Text('No changes made')));
-                          }
-                        }
-                      },
-                      child: const Text('Update'),
-                    )
-                  ],
-                ),
-              ),
-            ),
+    return AppFormPage(
+      title: 'User Profile',
+      heading: 'Your details, up to date.',
+      description: 'Manage the contact information used for your bookings.',
+      icon: Icons.person_outline_rounded,
+      formKey: _updateKey,
+      isLoading: isLoading,
+      children: [
+        TextFormField(
+          textInputAction: TextInputAction.next,
+          keyboardType: TextInputType.emailAddress,
+          validator: FormValidators.required('Please enter a valid email'),
+          controller: emailController,
+          decoration: const InputDecoration(
+              prefixIcon: Icon(Icons.email_outlined),
+              labelText: 'Email address'),
+        ),
+        const SizedBox(height: 13),
+        TextFormField(
+          textInputAction: TextInputAction.next,
+          validator: FormValidators.required('Please enter your name'),
+          controller: usernameController,
+          decoration: const InputDecoration(
+              prefixIcon: Icon(Icons.person_outline_rounded),
+              labelText: 'Full name'),
+        ),
+        const SizedBox(height: 13),
+        TextFormField(
+          textInputAction: TextInputAction.next,
+          keyboardType: TextInputType.phone,
+          validator:
+              FormValidators.required('Please enter a valid phone number'),
+          controller: phoneController,
+          decoration: const InputDecoration(
+              prefixIcon: Icon(Icons.phone_outlined),
+              labelText: 'Phone number'),
+        ),
+        const SizedBox(height: 13),
+        TextFormField(
+          textInputAction: TextInputAction.next,
+          validator: FormValidators.required('Please enter your address'),
+          controller: addressController,
+          decoration: const InputDecoration(
+              prefixIcon: Icon(Icons.location_on_outlined),
+              labelText: 'Address'),
+        ),
+        const SizedBox(height: 30),
+        ElevatedButton(
+          onPressed: () {
+            if (_updateKey.currentState!.validate()) {
+              if (hasChanges()) {
+                updateUser();
+              } else {
+                context.scaffoldMessenger
+                  ..hideCurrentSnackBar()
+                  ..showSnackBar(
+                      const SnackBar(content: Text('No changes made')));
+              }
+            }
+          },
+          child: const Text('Update'),
+        )
+      ],
     );
   }
 }

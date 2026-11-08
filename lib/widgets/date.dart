@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
+import 'package:flutter_application_7/extensions/date_time_extension.dart';
 
 class DateScreen extends StatefulWidget {
   final Function(String) updateSelectedDate;
@@ -14,17 +14,17 @@ class _DateScreenState extends State<DateScreen> {
   String? selectedDate;
 
   Future<void> _selectDate(BuildContext context) async {
-
     final DateTime? pickedDate = await showDatePicker(
       context: context,
       initialDate: DateTime.now(),
       firstDate: DateTime(2000),
       lastDate: DateTime(2100),
     );
+    if (!mounted) return;
 
     if (pickedDate != null) {
       setState(() {
-        selectedDate = DateFormat('dd-MM-yyyy').format(pickedDate);
+        selectedDate = pickedDate.formatDate();
       });
       widget.updateSelectedDate(selectedDate!);
     }
@@ -32,23 +32,10 @@ class _DateScreenState extends State<DateScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        // Text(
-        //   selectedDate != null
-        //       ? "Selected Date: $selectedDate"
-        //       : "No date selected",
-        //   style: const TextStyle(fontSize: 18),
-        // ),
-        const SizedBox(height: 20),
-        ElevatedButton(
-          onPressed: () {
-            _selectDate(context);
-          },
-          child: const Icon(Icons.edit_calendar),
-        ),
-      ],
+    return OutlinedButton.icon(
+      onPressed: () => _selectDate(context),
+      icon: const Icon(Icons.calendar_today_outlined, size: 18),
+      label: Text(selectedDate ?? 'Choose date'),
     );
   }
 }
