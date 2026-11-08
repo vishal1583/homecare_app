@@ -77,7 +77,7 @@ class _LoginScreen1State extends State<LoginScreen1> {
 
         noLoading();
 
-        Navigator.pushAndRemoveUntil(context,MaterialPageRoute(builder: (context) => DashboardScreen1()),(Route<dynamic> route)=> false,);
+        Navigator.pushAndRemoveUntil(context,MaterialPageRoute(builder: (context) => const DashboardScreen1()),(route)=> false,);
         
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Login Successful')));
 
@@ -124,14 +124,15 @@ class _LoginScreen1State extends State<LoginScreen1> {
               validator: (value) =>
                   (value!.isEmpty) ? 'Please enter a valid email' : null,
               controller: _emailController,
-              decoration: const InputDecoration(labelText: 'E-mail'),
+              
+              decoration: const InputDecoration(labelText: 'E-mail', helperText: ''),
             ),
-            const SizedBox(height: 13),
+            const SizedBox(height: 8),
             TextFormField(
               validator: (value) =>
                   (value!.isEmpty) ? 'Please enter a valid password' : null,
               controller: _passwordController,
-              decoration: const InputDecoration(labelText: 'Password'),
+              decoration: const InputDecoration(labelText: 'Password', helperText: ''),
             ),
             const SizedBox(height: 25),
             isLoading
@@ -155,7 +156,7 @@ class _LoginScreen1State extends State<LoginScreen1> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(builder: (context) {
-                          return SignUpScreen1();
+                          return const SignUpScreen1();
                         }),
                       );
                     },

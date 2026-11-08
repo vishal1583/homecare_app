@@ -120,15 +120,15 @@ class _LoginScreen2State extends State<LoginScreen2> {
               keyboardType: TextInputType.emailAddress,
               validator: (value) => (value!.isEmpty) ? 'Please enter your email' : null,
               controller: _emailController,
-              decoration: const InputDecoration(labelText: 'E-mail'),
+              decoration: const InputDecoration(labelText: 'E-mail', helperText: ''),
             ),
-            const SizedBox(height: 13),
+            const SizedBox(height: 8),
             TextFormField(
               keyboardType: TextInputType.visiblePassword,
               // obscureText: true,
               validator: (value) => (value!.isEmpty) ? 'Please enter your password' : null,
               controller: _passwordController,
-              decoration: const InputDecoration(labelText: 'Password'),
+              decoration: const InputDecoration(labelText: 'Password', helperText: ''),
             ),
             const SizedBox(height: 25),
             isLoading

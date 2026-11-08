@@ -80,28 +80,28 @@ class _DashboardScreen2State extends State<DashboardScreen2> {
                     icon: Icons.person_rounded,
                     title: 'My Profile',
                     onTapping: () {
-                      Navigator.push(context,MaterialPageRoute(builder: (context) => ProfileScreen2()));
+                      Navigator.push(context,MaterialPageRoute(builder: (context) => const ProfileScreen2()));
                     },
                   ),
                   DashboardCard(
                     icon: Icons.assignment_rounded,
                     title: 'View Bookings',
                     onTapping: () {
-                      Navigator.push(context, MaterialPageRoute(builder: (context)=> ViewBookingsScreen()));
+                      Navigator.push(context, MaterialPageRoute(builder: (context)=> const ViewBookingsScreen()));
                     },
                   ),
                   DashboardCard(
                     icon: Icons.work_rounded, 
                     title: 'Accepted Work', 
                     onTapping: (){
-                      Navigator.push(context, MaterialPageRoute(builder: (context)=> AcceptedWorkScreen()));
+                      Navigator.push(context, MaterialPageRoute(builder: (context)=> const AcceptedWorkScreen()));
                     }
                   ),
                   DashboardCard(
                     icon: Icons.feedback_rounded, 
                     title: 'Feedback', 
                     onTapping: (){
-                      Navigator.push(context, MaterialPageRoute(builder: (context)=> FeedBackViewScreen()));
+                      Navigator.push(context, MaterialPageRoute(builder: (context)=> const FeedBackViewScreen()));
                     },
                   ),
                   DashboardCard(
@@ -124,7 +124,7 @@ class _DashboardScreen2State extends State<DashboardScreen2> {
     // body
     Navigator.pushAndRemoveUntil(
         context,
-        MaterialPageRoute(builder: (context) => SelectUserScreen()),
+        MaterialPageRoute(builder: (context) => const SelectUserScreen()),
         (route) => false);
     print('$providerName(service provider) log out');
     print('-------------------------------');

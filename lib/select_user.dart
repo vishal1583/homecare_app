@@ -16,10 +16,15 @@ class SelectUserScreen extends StatelessWidget {
         child: Container(
           color: vanilla,
           child: Padding(
-            padding: const EdgeInsets.all(20.0),
+            padding: const EdgeInsets.symmetric(horizontal: 12.0),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
+
+                SizedBox(height: 200,width: 200,child: Image.asset('assets/man.png'),),
+
+                const SizedBox(height: 15),
+
                 // Title
                 const Text(
                   'Welcome! Please select your user type:',
